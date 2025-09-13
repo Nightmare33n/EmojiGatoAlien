@@ -1,11 +1,12 @@
 "use client";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
   const [clickCount, setClickCount] = useState(0);
   const [showImage, setShowImage] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const audioRef = useRef(null);
 
   const handleClick = () => {
     setIsAnimating(true);
@@ -19,16 +20,25 @@ export default function Home() {
   const resetCounter = () => {
     setClickCount(0);
     setShowImage(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
   };
 
   useEffect(() => {
-    if (clickCount >= 10) {
+    if (clickCount >= 30) {
       setShowImage(true);
+      if (audioRef.current) {
+        audioRef.current.play().catch(error => {
+          console.log("Error playing audio:", error);
+        });
+      }
     }
   }, [clickCount]);
 
-  const progressPercentage = Math.min((clickCount / 10) * 100, 100);
-  const remainingClicks = Math.max(10 - clickCount, 0);
+  const progressPercentage = Math.min((clickCount / 30) * 100, 100);
+  const remainingClicks = Math.max(30 - clickCount, 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
@@ -54,7 +64,7 @@ export default function Home() {
           </div>
 
           <div className="text-2xl font-bold text-white">
-            {clickCount} / 10 clics
+            {clickCount} / 30 clics
           </div>
 
           <button
@@ -95,6 +105,15 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      <audio
+        ref={audioRef}
+        loop
+        preload="auto"
+      >
+        <source src="/alien-sound.mp3" type="audio/mpeg" />
+        Tu navegador no soporta el elemento de audio.
+      </audio>
 
       <style jsx>{`
         @keyframes fade-in {
